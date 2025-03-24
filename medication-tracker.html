@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medication Refill Tracker</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f7;
+            color: #333;
+        }
+        h1 {
+            color: #1d1d1f;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #d1d1d6;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #0071e3;
+            color: white;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0077ed;
+        }
+        .info-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .next-refill {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .pills-remaining {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+        .hidden {
+            display: none;
+        }
+        .pill-count {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .days-left {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        #saveButton {
+            background-color: #34c759;
+        }
+        #saveButton:hover {
+            background-color: #30b955;
+        }
+        #resetButton {
+            background-color: #ff3b30;
+        }
+        #resetButton:hover {
+            background-color: #e4352b;
+        }
+    </style>
+</head>
+<body>
+    <h1>Medication Tracker</h1>
+    
+    <div id="setupForm" class="card">
+        <label for="startDate">When did this prescription start?</label>
+        <input type="date" id="startDate" required>
+        
+        <label for="totalPills">Total number of pills in prescription:</label>
+        <input type="number" id="totalPills" value="28" min="1" max="100" required>
+        
+        <label for="pillsPerDay">Pills per day:</label>
+        <input type="number" id="pillsPerDay" value="1" min="0.5" max="10" step="0.5" required>
+        
+        <button id="startTracking">Start Tracking</button>
+    </div>
+
+    <div id="trackingInfo" class="hidden">
+        <div class="card">
+            <h2>Current Status</h2>
+            <div class="info-box pills-remaining">
+                <div>Pills Remaining:</div>
+                <div id="pillCount" class="pill-count">--</div>
+            </div>
+            
+            <div class="info-box next-refill">
+                <div>Next Refill Request Date:</div>
+                <div id="refillDate" class="pill-count">--</div>
+                <div id="daysUntilRefill" class="days-left">--</div>
+            </div>
+            
+            <div class="card" style="margin-top: 20px;">
+                <h2>What If Scenario</h2>
+                <div style="margin-bottom: 15px;">
+                    <label for="extraPills">If I take this many extra pills today:</label>
+                    <input type="number" id="extraPills" value="1" min="1" max="10" step="1">
+                    <button id="calculateButton" style="margin-top: 10px;">Calculate</button>
+                </div>
+                
+                <div id="whatIfResults" class="hidden">
+                    <div class="info-box pills-remaining" style="background-color: #fff3e0; color: #e65100;">
+                        <div>New pills remaining:</div>
+                        <div id="newPillCount" class="pill-count">--</div>
+                    </div>
+                    
+                    <div class="info-box" style="background-color: #f3e5f5; color: #7b1fa2;">
+                        <div>Pills per day for remaining days:</div>
+                        <div id="newPillsPerDay" class="pill-count">--</div>
+                        <div id="pillDeficit" class="days-left" style="color: #d32f2f;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="resetButton" style="margin-top: 20px;">Reset Tracker</button>
+            <button id="saveButton">Update Start Date to Today</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get elements
+            const setupForm = document.getElementById('setupForm');
+            const trackingInfo = document.getElementById('trackingInfo');
+            const startDateInput = document.getElementById('startDate');
+            const totalPillsInput = document.getElementById('totalPills');
+            const pillsPerDayInput = document.getElementById('pillsPerDay');
+            const startTrackingBtn = document.getElementById('startTracking');
+            const resetButton = document.getElementById('resetButton');
+            const saveButton = document.getElementById('saveButton');
+            const pillCountElement = document.getElementById('pillCount');
+            const refillDateElement = document.getElementById('refillDate');
+            const daysUntilRefillElement = document.getElementById('daysUntilRefill');
+            const extraPillsInput = document.getElementById('extraPills');
+            const calculateButton = document.getElementById('calculateButton');
+            const whatIfResults = document.getElementById('whatIfResults');
+            const newPillCountElement = document.getElementById('newPillCount');
+            const newPillsPerDayElement = document.getElementById('newPillsPerDay');
+            const pillDeficitElement = document.getElementById('pillDeficit');
+            
+            // Set default date to today
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            startDateInput.value = formattedDate;
+            
+            // Check URL parameters
+            checkUrlParams();
+            
+            // Event listeners
+            startTrackingBtn.addEventListener('click', startTracking);
+            resetButton.addEventListener('click', resetTracker);
+            saveButton.addEventListener('click', updateStartDate);
+            calculateButton.addEventListener('click', calculateWhatIf);
+            
+            // Functions
+            function startTracking() {
+                const startDate = startDateInput.value;
+                const totalPills = parseInt(totalPillsInput.value);
+                const pillsPerDay = parseFloat(pillsPerDayInput.value);
+                
+                if (!startDate || isNaN(totalPills) || totalPills <= 0 || isNaN(pillsPerDay) || pillsPerDay <= 0) {
+                    alert('Please enter valid values for all fields.');
+                    return;
+                }
+                
+                // Create URL with parameters instead of using localStorage
+                updateUrlParams(startDate, totalPills, pillsPerDay);
+                
+                // Update UI
+                updateTrackingInfo(startDate, totalPills, pillsPerDay);
+                
+                // Show tracking info, hide setup form
+                setupForm.classList.add('hidden');
+                trackingInfo.classList.remove('hidden');
+            }
+            
+            function updateTrackingInfo(startDateStr, totalPills, pillsPerDay) {
+                if (!startDateStr || isNaN(totalPills) || isNaN(pillsPerDay)) {
+                    return;
+                }
+                
+                const startDate = new Date(startDateStr);
+                const currentDate = new Date();
+                
+                // Calculate days passed
+                const daysPassed = Math.floor((currentDate - startDate) / (24 * 60 * 60 * 1000));
+                
+                // Calculate pills remaining (capped at 0)
+                const pillsRemaining = Math.max(totalPills - (daysPassed * pillsPerDay), 0);
+                
+                // Calculate end of 28-day period
+                const refillDate = new Date(startDate);
+                refillDate.setDate(refillDate.getDate() + 28);
+                
+                // Add one more day because she can request the refill the day AFTER the 28-day period
+                const requestDate = new Date(refillDate);
+                requestDate.setDate(requestDate.getDate() + 1);
+                
+                // Calculate days until request date
+                const daysUntilRequest = Math.floor((requestDate - currentDate) / (24 * 60 * 60 * 1000));
+                
+                // Format request date
+                const requestDateFormatted = requestDate.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                
+                // Update UI
+                pillCountElement.textContent = pillsRemaining.toFixed(1).replace(/\.0$/, '');
+                refillDateElement.textContent = requestDateFormatted;
+                
+                if (daysUntilRequest === 0) {
+                    daysUntilRefillElement.textContent = "You can request a refill today!";
+                } else if (daysUntilRequest < 0) {
+                    daysUntilRefillElement.textContent = "Refill is available now!";
+                } else {
+                    daysUntilRefillElement.textContent = `${daysUntilRequest} days until refill`;
+                }
+            }
+            
+            function checkUrlParams() {
+                // Get URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const startDate = urlParams.get('startDate');
+                const totalPills = urlParams.get('totalPills');
+                const pillsPerDay = urlParams.get('pillsPerDay') || '1';
+                
+                if (startDate && totalPills) {
+                    // We have URL parameters, populate form fields
+                    startDateInput.value = startDate;
+                    totalPillsInput.value = totalPills;
+                    pillsPerDayInput.value = pillsPerDay;
+                    
+                    // Update and show tracking info
+                    updateTrackingInfo(startDate, parseInt(totalPills), parseFloat(pillsPerDay));
+                    setupForm.classList.add('hidden');
+                    trackingInfo.classList.remove('hidden');
+                }
+            }
+            
+            function updateUrlParams(startDate, totalPills, pillsPerDay) {
+                // Create URL with parameters
+                const url = new URL(window.location.href.split('?')[0]);
+                url.searchParams.set('startDate', startDate);
+                url.searchParams.set('totalPills', totalPills);
+                url.searchParams.set('pillsPerDay', pillsPerDay);
+                
+                // Update URL without reloading page
+                window.history.pushState({}, '', url);
+            }
+            
+            function resetTracker() {
+                if (confirm('Are you sure you want to reset the tracker? This will clear all saved data.')) {
+                    // Remove URL parameters
+                    const url = new URL(window.location.href.split('?')[0]);
+                    window.history.pushState({}, '', url);
+                    
+                    // Reset form and show it
+                    startDateInput.value = formattedDate;
+                    totalPillsInput.value = "28";
+                    
+                    setupForm.classList.remove('hidden');
+                    trackingInfo.classList.add('hidden');
+                }
+            }
+            
+            function updateStartDate() {
+                if (confirm('Update the start date to today? This will reset your tracking.')) {
+                    // Set new start date to today
+                    const today = new Date();
+                    const formattedDate = today.toISOString().split('T')[0];
+                    
+                    // Save current values
+                    const totalPills = parseInt(totalPillsInput.value);
+                    const pillsPerDay = parseFloat(pillsPerDayInput.value);
+                    
+                    // Update URL parameters
+                    updateUrlParams(formattedDate, totalPills, pillsPerDay);
+                    
+                    // Update UI
+                    startDateInput.value = formattedDate;
+                    updateTrackingInfo(formattedDate, totalPills, pillsPerDay);
+                }
+            }
+            
+            function calculateWhatIf() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const startDate = urlParams.get('startDate');
+                const totalPills = parseInt(urlParams.get('totalPills'));
+                const pillsPerDay = parseFloat(urlParams.get('pillsPerDay'));
+                const extraPills = parseInt(extraPillsInput.value);
+                
+                if (!startDate || isNaN(totalPills) || isNaN(pillsPerDay) || isNaN(extraPills)) {
+                    alert('Missing or invalid data. Please set up the tracker first.');
+                    return;
+                }
+                
+                const startDateObj = new Date(startDate);
+                const currentDate = new Date();
+                const refillDate = new Date(startDateObj);
+                refillDate.setDate(refillDate.getDate() + 28);
+                
+                // Calculate days passed and remaining
+                const daysPassed = Math.floor((currentDate - startDateObj) / (24 * 60 * 60 * 1000));
+                const daysRemaining = Math.max(28 - daysPassed, 0);
+                
+                // Calculate current pills remaining
+                const currentPillsRemaining = Math.max(totalPills - (daysPassed * pillsPerDay), 0);
+                
+                // Calculate new pills remaining after taking extra
+                const newPillsRemaining = Math.max(currentPillsRemaining - extraPills, 0);
+                
+                // Calculate new pills per day for remaining days
+                let newPillsPerDay = 0;
+                if (daysRemaining > 0) {
+                    newPillsPerDay = newPillsRemaining / daysRemaining;
+                }
+                
+                // Update UI
+                newPillCountElement.textContent = newPillsRemaining.toFixed(1).replace(/\.0$/, '');
+                newPillsPerDayElement.textContent = newPillsPerDay.toFixed(2);
+                
+                // Calculate and display deficit if any
+                const deficit = newPillsPerDay - pillsPerDay;
+                if (deficit < 0) {
+                    pillDeficitElement.textContent = `This is ${Math.abs(deficit).toFixed(2)} less than your prescribed ${pillsPerDay} per day`;
+                } else {
+                    pillDeficitElement.textContent = '';
+                }
+                
+                // Show results
+                whatIfResults.classList.remove('hidden');
+            }
+            
+            // Set up auto-refresh for accurate tracking
+            setInterval(function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const startDate = urlParams.get('startDate');
+                const totalPills = urlParams.get('totalPills');
+                const pillsPerDay = urlParams.get('pillsPerDay') || '1';
+                
+                if (startDate && totalPills) {
+                    updateTrackingInfo(startDate, parseInt(totalPills), parseFloat(pillsPerDay));
+                }
+            }, 60000); // Update every minute
+        });
+    </script>
+</body>
+</html>
