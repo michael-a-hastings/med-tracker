@@ -28,17 +28,85 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 SUPPORTED_AUDIO_EXTENSIONS = {".mp3", ".wav"}
-PRESET_TAGS = [
-    "energetic",
-    "dreamy",
-    "melancholic",
-    "uplifting",
-    "retro",
-    "electronic",
-    "acoustic",
-    "hip-hop",
-    "rock",
-    "pop",
+
+# Curated collections of tags to help shape the generated visual aesthetic.
+PRESET_TAG_CATEGORIES = {
+    "Mood": [
+        "uplifting",
+        "melancholic",
+        "dreamy",
+        "moody",
+        "hopeful",
+        "romantic",
+        "dramatic",
+        "chill",
+        "bittersweet",
+        "introspective",
+    ],
+    "Energy": [
+        "energetic",
+        "high-energy",
+        "slow-burn",
+        "downtempo",
+        "anthemic",
+        "groovy",
+        "pulsing",
+        "laid-back",
+        "soaring",
+        "minimal",
+    ],
+    "Genre": [
+        "electronic",
+        "synthwave",
+        "lo-fi",
+        "hip-hop",
+        "trap",
+        "r&b",
+        "rock",
+        "alt-rock",
+        "metal",
+        "punk",
+        "pop",
+        "indie-pop",
+        "folk",
+        "acoustic",
+        "country",
+        "jazz",
+        "soul",
+        "classical",
+        "ambient",
+        "world",
+    ],
+    "Era & Style": [
+        "retro",
+        "80s",
+        "90s",
+        "y2k",
+        "futuristic",
+        "cyberpunk",
+        "psychedelic",
+        "cinematic",
+        "festival",
+        "club",
+    ],
+    "Occasion": [
+        "sunset",
+        "night-drive",
+        "focus",
+        "celebration",
+        "workout",
+        "party",
+        "meditation",
+        "study",
+        "wedding",
+        "breakup",
+    ],
+}
+
+FLATTENED_PRESET_TAGS = [
+    (category, tag)
+    for category, tags in PRESET_TAG_CATEGORIES.items()
+    for tag in tags
 ]
 DEFAULT_RESOLUTION = (1280, 720)
 DEFAULT_FPS = 30
@@ -91,11 +159,12 @@ def prompt_audio_file(logs: List[str]) -> Path:
 def prompt_mood_tags(logs: List[str]) -> List[str]:
     """Prompt for mood/genre tags, allowing preset selections or custom input."""
     print("\nSelect mood/genre tags that describe the song. You can:")
-    print("  - Enter comma-separated numbers from the preset list below")
-    print("  - Or type custom tags separated by commas")
+    print("  - Enter numbers (comma or space separated) from the preset list below")
+    print("  - Mix preset numbers with custom tags (e.g. '1, 5, ethereal, sunset')")
     print("Preset options:")
-    for idx, tag in enumerate(PRESET_TAGS, start=1):
-        print(f"  {idx}. {tag}")
+    flattened = list(enumerate(FLATTENED_PRESET_TAGS, start=1))
+    for idx, (category, tag) in flattened:
+        print(f"  {idx:>2}. [{category}] {tag}")
 
     while True:
         try:
@@ -108,30 +177,49 @@ def prompt_mood_tags(logs: List[str]) -> List[str]:
             print("Please provide at least one tag describing the mood/genre.\n")
             continue
 
+        parts = [part.strip() for part in re.split(r"[,\s]+", tag_input) if part.strip()]
         selected_tags: List[str] = []
-        if all(part.strip().isdigit() for part in tag_input.split(",")):
-            for part in tag_input.split(","):
-                index = int(part.strip())
-                if not 1 <= index <= len(PRESET_TAGS):
+        invalid_selection = False
+
+        for part in parts:
+            if part.isdigit():
+                index = int(part)
+                if not 1 <= index <= len(flattened):
                     logs.append(f"Invalid tag index selected: {index}.")
                     print(f"'{index}' is not a valid option. Please try again.\n")
-                    selected_tags = []
+                    invalid_selection = True
                     break
-                selected_tags.append(PRESET_TAGS[index - 1])
+                selected_tags.append(flattened[index - 1][1])
+            else:
+                selected_tags.append(part)
 
-            if selected_tags:
-                logs.append(f"Selected preset tags: {selected_tags}.")
-                return selected_tags
+        if invalid_selection:
+            continue
 
-        else:
-            # Custom tags path
-            custom_tags = [tag.strip() for tag in tag_input.split(",") if tag.strip()]
-            if not custom_tags:
-                logs.append("Custom tag input parsing yielded no valid tags.")
-                print("Could not parse any tags from the input. Please try again.\n")
+        if not selected_tags:
+            logs.append("No tags parsed from selection input.")
+            print("Could not parse any tags from the input. Please try again.\n")
+            continue
+
+        unique_tags: List[str] = []
+        seen = set()
+        for tag in selected_tags:
+            normalized = tag.strip()
+            if not normalized:
                 continue
-            logs.append(f"Custom tags provided: {custom_tags}.")
-            return custom_tags
+            key = normalized.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            unique_tags.append(normalized)
+
+        if not unique_tags:
+            logs.append("Tag normalization removed all selections.")
+            print("Tags could not be interpreted. Please try again.\n")
+            continue
+
+        logs.append(f"Tags selected: {unique_tags}.")
+        return unique_tags
 
 
 def prompt_lyrics(logs: List[str]) -> str:
@@ -503,6 +591,52 @@ def generate_music_video(
     return str(video_path), duration, resolution_text, fps, str(thumbnail_path) if thumbnail_path else None
 
 
+def create_generation_payload(
+    audio_path: Path,
+    tags: Sequence[str],
+    lyrics_text: str,
+    logs: List[str] | None = None,
+    *,
+    resolution: Tuple[int, int] = DEFAULT_RESOLUTION,
+    fps: int = DEFAULT_FPS,
+    outputs_dir: Path | None = None,
+) -> dict:
+    """Convenience helper to produce the validated JSON payload."""
+
+    working_logs: List[str] = logs if logs is not None else []
+    (
+        video_file_url,
+        duration_seconds,
+        resolution_text,
+        frame_rate,
+        thumbnail_url,
+    ) = generate_music_video(
+        audio_path=audio_path,
+        tags=tags,
+        lyrics_text=lyrics_text,
+        logs=working_logs,
+        resolution=resolution,
+        fps=fps,
+        outputs_dir=outputs_dir,
+    )
+
+    payload = {
+        "video_file_url": video_file_url,
+        "video_metadata": {
+            "duration_seconds": round(duration_seconds, 2),
+            "resolution": resolution_text,
+            "frame_rate": frame_rate,
+        },
+    }
+
+    if thumbnail_url:
+        payload["thumbnail_url"] = thumbnail_url
+    if working_logs:
+        payload["logs"] = working_logs
+
+    return validate_output(payload, working_logs)
+
+
 def validate_output(payload: dict, logs: List[str]) -> dict:
     """Ensure the output JSON includes required fields."""
     errors = []
@@ -531,33 +665,12 @@ def main() -> None:
         lyrics_text = prompt_lyrics(logs)
         logs.append(f"Mood/genre tags set to: {tags}.")
 
-        (
-            video_file_url,
-            duration_seconds,
-            resolution_text,
-            frame_rate,
-            thumbnail_url,
-        ) = generate_music_video(
+        payload = create_generation_payload(
             audio_path=audio_path,
             tags=tags,
             lyrics_text=lyrics_text,
             logs=logs,
         )
-
-        payload = {
-            "video_file_url": video_file_url,
-            "video_metadata": {
-                "duration_seconds": round(duration_seconds, 2),
-                "resolution": resolution_text,
-                "frame_rate": frame_rate,
-            },
-        }
-        if thumbnail_url:
-            payload["thumbnail_url"] = thumbnail_url
-        if logs:
-            payload["logs"] = logs
-
-        payload = validate_output(payload, logs)
         print(json.dumps(payload, indent=2))
 
     except GenerationError as exc:
