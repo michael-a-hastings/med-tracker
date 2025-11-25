@@ -244,7 +244,14 @@
         <button id="toggle-pause" class="danger">Pause Simulation</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+    <script>
+        // Check if Three.js loaded
+        if (typeof THREE === 'undefined') {
+            document.body.innerHTML = '<div style="color: white; padding: 20px; font-family: sans-serif;"><h1>Error: Three.js failed to load</h1><p>Please check your internet connection and refresh the page.</p></div>';
+            throw new Error('Three.js library failed to load');
+        }
+    </script>
     <script>
         // Global variables
         let scene, camera, renderer;
@@ -265,53 +272,83 @@
             right: false
         };
 
-        // Initialize
-        init();
-        animate();
+        // Initialize with error handling
+        try {
+            console.log('Starting initialization...');
+            init();
+            console.log('Initialization complete, starting animation...');
+            animate();
+        } catch (error) {
+            console.error('Initialization error:', error);
+            document.getElementById('info-display').innerHTML =
+                '<div style="color: red;"><strong>Error:</strong><br>' + error.message + '</div>';
+        }
 
         function init() {
+            console.log('Creating scene...');
             // Scene
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x87CEEB, 0.002);
+            scene.background = new THREE.Color(0x87CEEB);
 
+            console.log('Creating camera...');
             // Camera
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
             camera.position.set(0, 40, 100);
             camera.lookAt(0, 20, 0);
 
+            console.log('Creating renderer...');
             // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            const container = document.getElementById('canvas-container');
+            if (!container) {
+                throw new Error('Canvas container not found');
+            }
+            container.appendChild(renderer.domElement);
+            console.log('Renderer attached to DOM');
 
             // Raycaster for clicking
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
 
+            console.log('Creating lights...');
             // Lights
             createLighting();
 
+            console.log('Creating terrain...');
             // Environment
             createTerrain();
+            console.log('Creating mountains...');
             createMountains();
+            console.log('Creating trees...');
             createTrees();
+            console.log('Creating rocks...');
             createRocks();
+            console.log('Creating stream...');
             createStream();
+            console.log('Creating clouds...');
             createClouds();
 
+            console.log('Creating animals...');
             // Animals
             createAnimals();
 
+            console.log('Setting up event listeners...');
             // Event listeners
             window.addEventListener('resize', onWindowResize);
             document.addEventListener('click', onDocumentClick);
             document.addEventListener('keydown', onKeyDown);
             document.addEventListener('keyup', onKeyUp);
 
+            console.log('Setting up UI controls...');
             // UI Controls
             setupUIControls();
+
+            console.log('Init complete!');
         }
 
         function createLighting() {
