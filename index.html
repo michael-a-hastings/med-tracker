@@ -3,902 +3,1165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Medication Tracker</title>
+    <title>Alpine Forest Simulation</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f7;
-            color: #333;
-        }
-        h1, h2, h3 {
-            color: #1d1d1f;
-            text-align: center;
-        }
-        .card {
-            background-color: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        input, button, select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 1px solid #d1d1d6;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #0071e3;
-            color: white;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        button:hover {
-            background-color: #0077ed;
-        }
-        .info-box {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .info-box-title {
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .next-refill {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-        .pills-remaining {
-            background-color: #e3f2fd;
-            color: #1565c0;
-        }
-        .pill-balance {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-        .hidden {
-            display: none;
-        }
-        .pill-count {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            margin: 10px 0;
-        }
-        .days-left {
-            text-align: center;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-        #balanceValue {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .balance-negative {
-            color: #d32f2f; /* Red */
-        }
-        .balance-positive {
-            color: #2e7d32; /* Green */
-        }
-        .balance-zero {
-            color: #000000; /* Black */
-        }
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .toggle-label {
-            margin-left: 10px;
-            flex-grow: 1;
-        }
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-            flex-shrink: 0;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .toggle-slider {
-            background-color: #34c759;
-        }
-        input:checked + .toggle-slider:before {
-            transform: translateX(26px);
-        }
-        .daily-tracking {
-            margin-top: 20px;
-        }
-        .pill-action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .pill-action-buttons button {
-            flex: 1;
-        }
-        .increment-btn {
-            background-color: #d32f2f;
-        }
-        .increment-btn:hover {
-            background-color: #b71c1c;
-        }
-        .decrement-btn {
-            background-color: #2e7d32;
-        }
-        .decrement-btn:hover {
-            background-color: #1b5e20;
-        }
-        #saveButton {
-            background-color: #34c759;
-        }
-        #saveButton:hover {
-            background-color: #30b955;
-        }
-        #resetButton {
-            background-color: #ff3b30;
-        }
-        #resetButton:hover {
-            background-color: #e4352b;
-        }
-        #exportDataBtn {
-            background-color: #9c27b0;
-        }
-        #exportDataBtn:hover {
-            background-color: #7b1fa2;
-        }
-        #importDataBtn {
-            background-color: #673ab7;
-        }
-        #importDataBtn:hover {
-            background-color: #512da8;
-        }
-        .tab-container {
+            margin: 0;
             overflow: hidden;
-            border: 1px solid #ccc;
-            background-color: #f1f1f1;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
         }
-        .tab-button {
-            background-color: inherit;
-            float: left;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 14px 16px;
-            transition: 0.3s;
-            font-size: 16px;
-            margin-bottom: 0;
-            width: 50%;
-            border-radius: 0;
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
         }
-        .tab-button:hover {
-            background-color: #ddd;
-        }
-        .tab-button.active {
-            background-color: #0071e3;
+
+        #controls-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
             color: white;
-        }
-        .tab-content {
-            display: none;
             padding: 20px;
-            border: 1px solid #ccc;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            background-color: white;
+            border-radius: 12px;
+            width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
-        .data-io {
+
+        #controls-panel h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        #controls-panel h3 {
             margin-top: 20px;
-        }
-        #dataString {
-            width: 100%;
-            height: 80px;
-            padding: 8px;
             margin-bottom: 10px;
+            font-size: 14px;
+            color: #4CAF50;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid #555;
+        }
+
+        .value-display {
+            display: inline-block;
+            float: right;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button.danger {
+            background: #f44336;
+        }
+
+        button.danger:hover {
+            background: #da190b;
+        }
+
+        #info-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        #pov-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            display: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .toggle-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
             border-radius: 8px;
-            border: 1px solid #ccc;
-            resize: none;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <h1>Enhanced Medication Tracker</h1>
-    
-    <div id="setupForm" class="card">
-        <h2>Initial Setup</h2>
-        <label for="startDate">When did this prescription start?</label>
-        <input type="date" id="startDate" required>
-        
-        <label for="totalPills">Total number of pills in prescription:</label>
-        <input type="number" id="totalPills" value="82" min="1" max="200" required>
-        
-        <label for="pillsPerDay">Standard dose (pills per day):</label>
-        <input type="number" id="pillsPerDay" value="3" min="0.5" max="10" step="0.5" required>
-        
-        <label for="cycleDays">Prescription duration (days):</label>
-        <input type="number" id="cycleDays" value="28" min="1" max="90" required>
-        
-        <button id="startTracking">Start Tracking</button>
-    </div>
+    <div id="canvas-container"></div>
 
-    <div id="trackingInfo" class="hidden">
-        <div class="tab-container">
-            <button class="tab-button active" onclick="openTab(event, 'mainTab')">Main</button>
-            <button class="tab-button" onclick="openTab(event, 'settingsTab')">Settings</button>
-        </div>
-        
-        <div id="mainTab" class="tab-content" style="display: block;">
-            <div class="card">
-                <h2>Current Status</h2>
-                <div class="info-box pills-remaining">
-                    <div class="info-box-title">Pills Remaining:</div>
-                    <div id="pillCount" class="pill-count">--</div>
-                </div>
-                
-                <div class="info-box next-refill">
-                    <div class="info-box-title">Next Refill Request Date (Day 29):</div>
-                    <div id="refillDate" class="pill-count">--</div>
-                    <div id="daysUntilRefill" class="days-left">--</div>
-                </div>
-                
-                <div class="info-box pill-balance">
-                    <div class="info-box-title">Pill Balance (Black/Red):</div>
-                    <div id="balanceValue" class="pill-count">0</div>
-                    <div class="days-left">Positive (black) means you've saved pills. Negative (red) means you've used extra. You start each cycle with -2 pills.</div>
-                </div>
-                
-                <div class="toggle-container" style="display: none;">
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="excusePillsToggle">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <div class="toggle-label">Excuse 2-pill deficit (for 82 pills over 28 days at 3 pills/day)</div>
-                </div>
-                
-                <div class="daily-tracking">
-                    <h3>Daily Pill Tracking</h3>
-                    <div class="pill-action-buttons">
-                        <button id="takeExtraPillBtn" class="increment-btn">Took Extra (+1)</button>
-                        <button id="takeHalfExtraPillBtn" class="increment-btn" style="background-color: #ff9800;">Took Extra (+0.5)</button>
-                    </div>
-                    <div class="pill-action-buttons" style="margin-top: 10px;">
-                        <button id="skipPillBtn" class="decrement-btn">Took Less (-1)</button>
-                        <button id="skipHalfPillBtn" class="decrement-btn" style="background-color: #4caf50;">Took Less (-0.5)</button>
-                    </div>
-                    <div style="margin-top: 15px; text-align: center;">
-                        <div id="todayStatus" class="days-left" style="font-weight: bold;">Today: Taking prescribed amount (3 pills)</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="settingsTab" class="tab-content">
-            <div class="card">
-                <h2>Settings</h2>
-                <label for="updateTotalPills">Total pills in prescription:</label>
-                <input type="number" id="updateTotalPills" min="1" max="200">
-                
-                <label for="updatePillsPerDay">Standard dose (pills per day):</label>
-                <input type="number" id="updatePillsPerDay" min="0.5" max="10" step="0.5">
-                
-                <label for="updateCycleDays">Days in prescription cycle:</label>
-                <input type="number" id="updateCycleDays" min="1" max="90">
-                
-                <button id="updateSettings">Update Settings</button>
-                
-                <button id="resetButton" style="margin-top: 20px;">Reset Tracker</button>
-                <button id="saveButton">Update Start Date to Today</button>
-                
-                <div class="data-io">
-                    <h3>Backup & Restore</h3>
-                    <button id="exportDataBtn">Export Data</button>
-                    <textarea id="dataString" placeholder="Paste data string here to import"></textarea>
-                    <button id="importDataBtn">Import Data</button>
-                </div>
-            </div>
+    <div id="info-display">
+        <div><strong>Alpine Forest Simulation</strong></div>
+        <div id="time-display">Time: 06:00</div>
+        <div id="weather-display">Weather: Clear</div>
+        <div id="camera-mode">Mode: Free Camera</div>
+        <div style="margin-top: 10px; font-size: 11px; color: #aaa;">
+            Click creatures to enter POV mode<br>
+            ESC to exit POV | Mouse to look | WASD to move
         </div>
     </div>
 
+    <div id="pov-info"></div>
+
+    <div id="controls-panel">
+        <h2>Simulation Controls</h2>
+
+        <h3>Time & Weather</h3>
+        <div class="control-group">
+            <label>Time Speed: <span class="value-display" id="time-speed-val">1x</span></label>
+            <input type="range" id="time-speed" min="0" max="10" value="1" step="0.1">
+        </div>
+
+        <div class="control-group">
+            <label>Cloud Coverage: <span class="value-display" id="cloud-coverage-val">50%</span></label>
+            <input type="range" id="cloud-coverage" min="0" max="100" value="50">
+        </div>
+
+        <div class="control-group">
+            <label>Weather:</label>
+            <select id="weather-type">
+                <option value="clear">Clear</option>
+                <option value="cloudy">Cloudy</option>
+                <option value="snowing">Snowing</option>
+                <option value="foggy">Foggy</option>
+            </select>
+        </div>
+
+        <h3>Environment</h3>
+        <div class="control-group">
+            <label>Tree Density: <span class="value-display" id="tree-density-val">100</span></label>
+            <input type="range" id="tree-density" min="50" max="300" value="100">
+        </div>
+
+        <div class="control-group">
+            <label>Animal Count: <span class="value-display" id="animal-count-val">30</span></label>
+            <input type="range" id="animal-count" min="10" max="100" value="30">
+        </div>
+
+        <div class="control-group">
+            <label>Stream Flow: <span class="value-display" id="stream-flow-val">50%</span></label>
+            <input type="range" id="stream-flow" min="0" max="100" value="50">
+        </div>
+
+        <h3>Lighting</h3>
+        <div class="control-group">
+            <label>Sun Intensity: <span class="value-display" id="sun-intensity-val">1.0</span></label>
+            <input type="range" id="sun-intensity" min="0" max="2" value="1" step="0.1">
+        </div>
+
+        <div class="control-group">
+            <label>Ambient Light: <span class="value-display" id="ambient-light-val">0.3</span></label>
+            <input type="range" id="ambient-light" min="0" max="1" value="0.3" step="0.05">
+        </div>
+
+        <div class="control-group">
+            <label>Fog Density: <span class="value-display" id="fog-density-val">0.002</span></label>
+            <input type="range" id="fog-density" min="0" max="0.01" value="0.002" step="0.0001">
+        </div>
+
+        <button id="reset-camera">Reset Camera View</button>
+        <button id="toggle-pause" class="danger">Pause Simulation</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get elements
-            const setupForm = document.getElementById('setupForm');
-            const trackingInfo = document.getElementById('trackingInfo');
-            const startDateInput = document.getElementById('startDate');
-            const totalPillsInput = document.getElementById('totalPills');
-            const pillsPerDayInput = document.getElementById('pillsPerDay');
-            const cycleDaysInput = document.getElementById('cycleDays');
-            const updateTotalPillsInput = document.getElementById('updateTotalPills');
-            const updatePillsPerDayInput = document.getElementById('updatePillsPerDay');
-            const updateCycleDaysInput = document.getElementById('updateCycleDays');
-            const startTrackingBtn = document.getElementById('startTracking');
-            const updateSettingsBtn = document.getElementById('updateSettings');
-            const resetButton = document.getElementById('resetButton');
-            const saveButton = document.getElementById('saveButton');
-            const pillCountElement = document.getElementById('pillCount');
-            const refillDateElement = document.getElementById('refillDate');
-            const daysUntilRefillElement = document.getElementById('daysUntilRefill');
-            const balanceValueElement = document.getElementById('balanceValue');
-            const excusePillsToggle = document.getElementById('excusePillsToggle');
-            const todayStatusElement = document.getElementById('todayStatus');
-            const exportDataBtn = document.getElementById('exportDataBtn');
-            const importDataBtn = document.getElementById('importDataBtn');
-            const dataStringArea = document.getElementById('dataString');
-            
-            // Initialize variables
-            let todayExtraPills = 0;
-            let pillBalance = 0;
-            
-            // Set default date to today
-            const today = new Date();
-            const formattedDate = today.toISOString().split('T')[0];
-            startDateInput.value = formattedDate;
-            
-            // Try to initialize from URL or localStorage
-            initializeFromStorage();
-            
+        // Global variables
+        let scene, camera, renderer;
+        let terrain, mountains, trees = [], rocks = [], stream;
+        let animals = [], birds = [], wolves = [];
+        let clouds = [];
+        let sun, sunLight, ambientLight, hemisphereLight;
+        let timeOfDay = 6; // Start at 6 AM (sunrise)
+        let timeSpeed = 1;
+        let isPaused = false;
+        let povMode = false;
+        let povTarget = null;
+        let raycaster, mouse;
+        let controls = {
+            forward: false,
+            backward: false,
+            left: false,
+            right: false
+        };
+
+        // Initialize
+        init();
+        animate();
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x87CEEB, 0.002);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 40, 100);
+            camera.lookAt(0, 20, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Raycaster for clicking
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Lights
+            createLighting();
+
+            // Environment
+            createTerrain();
+            createMountains();
+            createTrees();
+            createRocks();
+            createStream();
+            createClouds();
+
+            // Animals
+            createAnimals();
+
             // Event listeners
-            startTrackingBtn.addEventListener('click', startTracking);
-            updateSettingsBtn.addEventListener('click', updateSettings);
-            resetButton.addEventListener('click', resetTracker);
-            saveButton.addEventListener('click', updateStartDate);
-            excusePillsToggle.addEventListener('change', function() {
-                saveDataToStorage();
-                updateTrackingInfo();
-            });
-            
-            // Add pill tracking buttons
-            document.getElementById('takeExtraPillBtn').addEventListener('click', function() {
-                updatePillBalance(-1); // Negative because taking extra reduces balance
-                updateTodayStatus(1);
-            });
-            document.getElementById('takeHalfExtraPillBtn').addEventListener('click', function() {
-                updatePillBalance(-0.5);
-                updateTodayStatus(0.5);
-            });
-            document.getElementById('skipPillBtn').addEventListener('click', function() {
-                updatePillBalance(1); // Positive because taking less increases balance
-                updateTodayStatus(-1);
-            });
-            document.getElementById('skipHalfPillBtn').addEventListener('click', function() {
-                updatePillBalance(0.5);
-                updateTodayStatus(-0.5);
-            });
-            
-            exportDataBtn.addEventListener('click', exportData);
-            importDataBtn.addEventListener('click', importData);
-            
-            // Functions
-            function startTracking() {
-                const startDate = startDateInput.value;
-                const totalPills = parseInt(totalPillsInput.value);
-                const pillsPerDay = parseFloat(pillsPerDayInput.value);
-                const cycleDays = parseInt(cycleDaysInput.value);
-                
-                if (!startDate || isNaN(totalPills) || totalPills <= 0 || 
-                    isNaN(pillsPerDay) || pillsPerDay <= 0 ||
-                    isNaN(cycleDays) || cycleDays <= 0) {
-                    alert('Please enter valid values for all fields.');
-                    return;
-                }
-                
-                // Initialize pill balance (starting with the natural deficit)
-                const naturalDeficit = totalPills - (pillsPerDay * cycleDays);
-                pillBalance = naturalDeficit; // Start with the deficit (likely -2)
-                
-                // Reset today's changes
-                todayExtraPills = 0;
-                
-                // Initialize today status
-                todayStatusElement.textContent = `Today: Taking prescribed amount (${pillsPerDay} pills)`;
-                todayStatusElement.style.color = '#000000';
-                
-                // Update settings inputs
-                updateTotalPillsInput.value = totalPills;
-                updatePillsPerDayInput.value = pillsPerDay;
-                updateCycleDaysInput.value = cycleDays;
-                
-                // Save data
-                saveDataToStorage();
-                
-                // Update UI
-                updateTrackingInfo();
-                
-                // Show tracking info, hide setup form
-                setupForm.classList.add('hidden');
-                trackingInfo.classList.remove('hidden');
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('click', onDocumentClick);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+
+            // UI Controls
+            setupUIControls();
+        }
+
+        function createLighting() {
+            // Sun (Directional Light)
+            sunLight = new THREE.DirectionalLight(0xffffff, 1);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = 500;
+            sunLight.shadow.camera.left = -200;
+            sunLight.shadow.camera.right = 200;
+            sunLight.shadow.camera.top = 200;
+            sunLight.shadow.camera.bottom = -200;
+            scene.add(sunLight);
+
+            // Ambient light
+            ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+            scene.add(ambientLight);
+
+            // Hemisphere light for natural sky lighting
+            hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x545454, 0.6);
+            scene.add(hemisphereLight);
+
+            // Sun sphere (visual)
+            const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
+            const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            sun = new THREE.Mesh(sunGeometry, sunMaterial);
+            scene.add(sun);
+        }
+
+        function createTerrain() {
+            const geometry = new THREE.PlaneGeometry(500, 500, 100, 100);
+            const vertices = geometry.attributes.position.array;
+
+            // Add hills and valleys
+            for (let i = 0; i < vertices.length; i += 3) {
+                const x = vertices[i];
+                const y = vertices[i + 1];
+                vertices[i + 2] = Math.sin(x * 0.05) * 5 + Math.cos(y * 0.05) * 5 + Math.random() * 2;
             }
-            
-            function updateSettings() {
-                const totalPills = parseInt(updateTotalPillsInput.value);
-                const pillsPerDay = parseFloat(updatePillsPerDayInput.value);
-                const cycleDays = parseInt(updateCycleDaysInput.value);
-                
-                if (isNaN(totalPills) || totalPills <= 0 || 
-                    isNaN(pillsPerDay) || pillsPerDay <= 0 ||
-                    isNaN(cycleDays) || cycleDays <= 0) {
-                    alert('Please enter valid values for all fields.');
-                    return;
-                }
-                
-                // Update main settings
-                totalPillsInput.value = totalPills;
-                pillsPerDayInput.value = pillsPerDay;
-                cycleDaysInput.value = cycleDays;
-                
-                // Save and update
-                saveDataToStorage();
-                updateTrackingInfo();
+
+            geometry.computeVertexNormals();
+
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x2d5016,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+
+            terrain = new THREE.Mesh(geometry, material);
+            terrain.rotation.x = -Math.PI / 2;
+            terrain.receiveShadow = true;
+            scene.add(terrain);
+        }
+
+        function createMountains() {
+            mountains = new THREE.Group();
+
+            // Create multiple mountain peaks
+            for (let i = 0; i < 5; i++) {
+                const height = 80 + Math.random() * 60;
+                const geometry = new THREE.ConeGeometry(30 + Math.random() * 20, height, 6);
+                const material = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
+                const mountain = new THREE.Mesh(geometry, material);
+
+                mountain.position.x = (i - 2) * 100 + (Math.random() - 0.5) * 40;
+                mountain.position.y = height / 2;
+                mountain.position.z = -200 - Math.random() * 50;
+                mountain.castShadow = true;
+                mountain.receiveShadow = true;
+
+                // Snow cap
+                const snowHeight = height * 0.3;
+                const snowGeometry = new THREE.ConeGeometry(
+                    geometry.parameters.radius * 0.6,
+                    snowHeight,
+                    geometry.parameters.radialSegments
+                );
+                const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const snowCap = new THREE.Mesh(snowGeometry, snowMaterial);
+                snowCap.position.y = height / 2 + snowHeight / 2 - 5;
+                mountain.add(snowCap);
+
+                mountains.add(mountain);
             }
-            
-            function updateTrackingInfo() {
-                // Get values from storage
-                const data = getDataFromStorage();
-                if (!data) return;
-                
-                const startDate = data.startDate;
-                const totalPills = data.totalPills;
-                const pillsPerDay = data.pillsPerDay;
-                const cycleDays = data.cycleDays;
-                
-                // Get balances
-                pillBalance = data.pillBalance || 0;
-                
-                // Parse dates
-                const startDateObj = new Date(startDate);
-                const currentDate = new Date();
-                
-                // Calculate days passed
-                const daysPassed = Math.floor((currentDate - startDateObj) / (24 * 60 * 60 * 1000));
-                
-                // Calculate pills that should have been used (daysPassed * pillsPerDay)
-                const standardPillsUsed = daysPassed * pillsPerDay;
-                
-                // Calculate pills remaining (considering the balance)
-                let pillsRemaining = Math.max(totalPills - standardPillsUsed + pillBalance, 0);
-                
-                // Calculate prescription end (28 days)
-                const endCycle = new Date(startDateObj);
-                endCycle.setDate(endCycle.getDate() + cycleDays);
-                
-                // Calculate refill date (day 29 - the day AFTER the cycle ends)
-                const refillDate = new Date(startDateObj);
-                refillDate.setDate(refillDate.getDate() + cycleDays + 1);
-                
-                // Calculate days until refill
-                const daysUntilRefill = Math.ceil((refillDate - currentDate) / (24 * 60 * 60 * 1000));
-                
-                // Format refill date
-                const refillDateFormatted = refillDate.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
+
+            scene.add(mountains);
+        }
+
+        function createTrees() {
+            const treeCount = 100;
+
+            for (let i = 0; i < treeCount; i++) {
+                const tree = createTree();
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 30 + Math.random() * 150;
+
+                tree.position.x = Math.cos(angle) * distance;
+                tree.position.z = Math.sin(angle) * distance;
+                tree.position.y = 0;
+
+                tree.rotation.y = Math.random() * Math.PI * 2;
+
+                trees.push(tree);
+                scene.add(tree);
+            }
+        }
+
+        function createTree() {
+            const tree = new THREE.Group();
+
+            // Trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.8, 8, 8);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 4;
+            trunk.castShadow = true;
+            tree.add(trunk);
+
+            // Pine needles (cone)
+            const needlesGeometry = new THREE.ConeGeometry(3, 12, 8);
+            const needlesMaterial = new THREE.MeshStandardMaterial({ color: 0x1a4d2e });
+
+            for (let i = 0; i < 3; i++) {
+                const needles = new THREE.Mesh(needlesGeometry, needlesMaterial);
+                needles.position.y = 10 + i * 3;
+                needles.scale.y = 1 - i * 0.2;
+                needles.scale.x = 1 - i * 0.15;
+                needles.scale.z = 1 - i * 0.15;
+                needles.castShadow = true;
+                tree.add(needles);
+            }
+
+            // Snow on branches
+            if (Math.random() > 0.3) {
+                const snowGeometry = new THREE.ConeGeometry(3.2, 3, 8);
+                const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+                const snow = new THREE.Mesh(snowGeometry, snowMaterial);
+                snow.position.y = 16;
+                tree.add(snow);
+            }
+
+            return tree;
+        }
+
+        function createRocks() {
+            for (let i = 0; i < 30; i++) {
+                const size = 1 + Math.random() * 3;
+                const geometry = new THREE.DodecahedronGeometry(size, 0);
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x808080,
+                    roughness: 0.8
                 });
-                
-                // Update UI
-                pillCountElement.textContent = pillsRemaining.toFixed(1).replace(/\.0$/, '');
-                refillDateElement.textContent = refillDateFormatted;
-                
-                if (daysUntilRefill === 0) {
-                    daysUntilRefillElement.textContent = "You can request a refill today!";
-                } else if (daysUntilRefill < 0) {
-                    daysUntilRefillElement.textContent = "Refill request is available now!";
+                const rock = new THREE.Mesh(geometry, material);
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 20 + Math.random() * 180;
+
+                rock.position.x = Math.cos(angle) * distance;
+                rock.position.z = Math.sin(angle) * distance;
+                rock.position.y = size / 2;
+
+                rock.rotation.x = Math.random() * Math.PI;
+                rock.rotation.z = Math.random() * Math.PI;
+
+                rock.castShadow = true;
+                rock.receiveShadow = true;
+
+                rocks.push(rock);
+                scene.add(rock);
+            }
+        }
+
+        function createStream() {
+            stream = new THREE.Group();
+
+            // Create a winding stream
+            const curve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(-100, 0.2, 80),
+                new THREE.Vector3(-50, 0.2, 60),
+                new THREE.Vector3(0, 0.2, 50),
+                new THREE.Vector3(50, 0.2, 40),
+                new THREE.Vector3(100, 0.2, 30)
+            ]);
+
+            const points = curve.getPoints(100);
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const width = 3 + Math.sin(i * 0.1) * 0.5;
+                const geometry = new THREE.PlaneGeometry(width, 2);
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x4a90e2,
+                    transparent: true,
+                    opacity: 0.7,
+                    roughness: 0.1,
+                    metalness: 0.3
+                });
+
+                const segment = new THREE.Mesh(geometry, material);
+                segment.position.copy(points[i]);
+                segment.rotation.x = -Math.PI / 2;
+
+                if (i > 0) {
+                    const angle = Math.atan2(
+                        points[i].z - points[i - 1].z,
+                        points[i].x - points[i - 1].x
+                    );
+                    segment.rotation.z = -angle;
+                }
+
+                stream.add(segment);
+            }
+
+            scene.add(stream);
+        }
+
+        function createClouds() {
+            for (let i = 0; i < 30; i++) {
+                const cloud = createCloud();
+                cloud.position.x = (Math.random() - 0.5) * 500;
+                cloud.position.y = 60 + Math.random() * 40;
+                cloud.position.z = (Math.random() - 0.5) * 500;
+                clouds.push(cloud);
+                scene.add(cloud);
+            }
+        }
+
+        function createCloud() {
+            const cloud = new THREE.Group();
+            const geometry = new THREE.SphereGeometry(1, 8, 8);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            for (let i = 0; i < 5; i++) {
+                const puff = new THREE.Mesh(geometry, material);
+                const scale = 3 + Math.random() * 4;
+                puff.scale.set(scale, scale * 0.6, scale);
+                puff.position.x = (Math.random() - 0.5) * 10;
+                puff.position.y = (Math.random() - 0.5) * 3;
+                puff.position.z = (Math.random() - 0.5) * 10;
+                cloud.add(puff);
+            }
+
+            cloud.userData.speed = 0.02 + Math.random() * 0.03;
+
+            return cloud;
+        }
+
+        function createAnimals() {
+            // Woodland creatures (deer, rabbits)
+            for (let i = 0; i < 15; i++) {
+                const animal = createWoodlandCreature();
+                animals.push(animal);
+                scene.add(animal);
+            }
+
+            // Birds
+            for (let i = 0; i < 10; i++) {
+                const bird = createBird();
+                birds.push(bird);
+                scene.add(bird);
+            }
+
+            // Wolves
+            for (let i = 0; i < 5; i++) {
+                const wolf = createWolf();
+                wolves.push(wolf);
+                scene.add(wolf);
+            }
+        }
+
+        function createWoodlandCreature() {
+            const creature = new THREE.Group();
+
+            // Body
+            const bodyGeometry = new THREE.CapsuleGeometry(0.8, 2, 4, 8);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.rotation.z = Math.PI / 2;
+            body.position.y = 1.5;
+            body.castShadow = true;
+            creature.add(body);
+
+            // Head
+            const headGeometry = new THREE.SphereGeometry(0.6, 8, 8);
+            const head = new THREE.Mesh(headGeometry, bodyMaterial);
+            head.position.y = 2;
+            head.position.x = 1.5;
+            head.castShadow = true;
+            creature.add(head);
+
+            // Legs
+            const legGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1.5, 6);
+            for (let i = 0; i < 4; i++) {
+                const leg = new THREE.Mesh(legGeometry, bodyMaterial);
+                leg.position.y = 0.75;
+                leg.position.x = (i < 2) ? 0.5 : -0.5;
+                leg.position.z = (i % 2 === 0) ? 0.4 : -0.4;
+                leg.castShadow = true;
+                creature.add(leg);
+            }
+
+            // Position randomly
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 20 + Math.random() * 100;
+            creature.position.x = Math.cos(angle) * distance;
+            creature.position.z = Math.sin(angle) * distance;
+            creature.position.y = 0;
+
+            // Movement data
+            creature.userData = {
+                type: 'deer',
+                speed: 0.05 + Math.random() * 0.1,
+                direction: Math.random() * Math.PI * 2,
+                wanderTimer: 0,
+                clickable: true
+            };
+
+            return creature;
+        }
+
+        function createBird() {
+            const bird = new THREE.Group();
+
+            // Body
+            const bodyGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x2F4F4F });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.scale.z = 1.5;
+            body.castShadow = true;
+            bird.add(body);
+
+            // Wings
+            const wingGeometry = new THREE.BoxGeometry(1.5, 0.1, 0.5);
+            const wing = new THREE.Mesh(wingGeometry, bodyMaterial);
+            wing.castShadow = true;
+            bird.add(wing);
+
+            // Position in sky
+            bird.position.x = (Math.random() - 0.5) * 200;
+            bird.position.y = 20 + Math.random() * 30;
+            bird.position.z = (Math.random() - 0.5) * 200;
+
+            bird.userData = {
+                type: 'bird',
+                speed: 0.2 + Math.random() * 0.3,
+                direction: Math.random() * Math.PI * 2,
+                altitude: bird.position.y,
+                wingPhase: Math.random() * Math.PI * 2,
+                clickable: true
+            };
+
+            return bird;
+        }
+
+        function createWolf() {
+            const wolf = new THREE.Group();
+
+            // Body
+            const bodyGeometry = new THREE.CapsuleGeometry(0.6, 2.5, 4, 8);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x696969 });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.rotation.z = Math.PI / 2;
+            body.position.y = 1.2;
+            body.castShadow = true;
+            wolf.add(body);
+
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.8, 0.7, 1);
+            const head = new THREE.Mesh(headGeometry, bodyMaterial);
+            head.position.y = 1.5;
+            head.position.x = 2;
+            head.castShadow = true;
+            wolf.add(head);
+
+            // Ears
+            const earGeometry = new THREE.ConeGeometry(0.2, 0.4, 4);
+            for (let i = 0; i < 2; i++) {
+                const ear = new THREE.Mesh(earGeometry, bodyMaterial);
+                ear.position.y = 1.9;
+                ear.position.x = 2;
+                ear.position.z = (i === 0) ? 0.3 : -0.3;
+                wolf.add(ear);
+            }
+
+            // Legs
+            const legGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1.2, 6);
+            for (let i = 0; i < 4; i++) {
+                const leg = new THREE.Mesh(legGeometry, bodyMaterial);
+                leg.position.y = 0.6;
+                leg.position.x = (i < 2) ? 1 : -0.5;
+                leg.position.z = (i % 2 === 0) ? 0.3 : -0.3;
+                leg.castShadow = true;
+                wolf.add(leg);
+            }
+
+            // Position
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 50 + Math.random() * 120;
+            wolf.position.x = Math.cos(angle) * distance;
+            wolf.position.z = Math.sin(angle) * distance;
+            wolf.position.y = 0;
+
+            wolf.userData = {
+                type: 'wolf',
+                speed: 0.08 + Math.random() * 0.12,
+                direction: Math.random() * Math.PI * 2,
+                wanderTimer: 0,
+                clickable: true
+            };
+
+            return wolf;
+        }
+
+        function updateAnimals() {
+            // Update woodland creatures
+            animals.forEach(animal => {
+                animal.userData.wanderTimer -= 1;
+
+                if (animal.userData.wanderTimer <= 0) {
+                    animal.userData.direction += (Math.random() - 0.5) * 0.5;
+                    animal.userData.wanderTimer = 60 + Math.random() * 120;
+                }
+
+                const dx = Math.cos(animal.userData.direction) * animal.userData.speed;
+                const dz = Math.sin(animal.userData.direction) * animal.userData.speed;
+
+                animal.position.x += dx;
+                animal.position.z += dz;
+
+                // Keep in bounds
+                if (Math.abs(animal.position.x) > 200) {
+                    animal.userData.direction = Math.PI - animal.userData.direction;
+                }
+                if (Math.abs(animal.position.z) > 200) {
+                    animal.userData.direction = -animal.userData.direction;
+                }
+
+                animal.rotation.y = animal.userData.direction + Math.PI / 2;
+            });
+
+            // Update birds
+            birds.forEach(bird => {
+                const dx = Math.cos(bird.userData.direction) * bird.userData.speed;
+                const dz = Math.sin(bird.userData.direction) * bird.userData.speed;
+
+                bird.position.x += dx;
+                bird.position.z += dz;
+
+                // Wing flapping
+                bird.userData.wingPhase += 0.2;
+                bird.children[1].rotation.z = Math.sin(bird.userData.wingPhase) * 0.5;
+
+                // Altitude variation
+                bird.position.y = bird.userData.altitude + Math.sin(bird.userData.wingPhase * 0.5) * 2;
+
+                // Keep in bounds
+                if (Math.abs(bird.position.x) > 250) {
+                    bird.userData.direction = Math.PI - bird.userData.direction;
+                }
+                if (Math.abs(bird.position.z) > 250) {
+                    bird.userData.direction = -bird.userData.direction;
+                }
+
+                bird.rotation.y = bird.userData.direction;
+            });
+
+            // Update wolves
+            wolves.forEach(wolf => {
+                wolf.userData.wanderTimer -= 1;
+
+                if (wolf.userData.wanderTimer <= 0) {
+                    wolf.userData.direction += (Math.random() - 0.5) * 0.3;
+                    wolf.userData.wanderTimer = 100 + Math.random() * 200;
+                }
+
+                const dx = Math.cos(wolf.userData.direction) * wolf.userData.speed;
+                const dz = Math.sin(wolf.userData.direction) * wolf.userData.speed;
+
+                wolf.position.x += dx;
+                wolf.position.z += dz;
+
+                // Keep in bounds
+                if (Math.abs(wolf.position.x) > 200) {
+                    wolf.userData.direction = Math.PI - wolf.userData.direction;
+                }
+                if (Math.abs(wolf.position.z) > 200) {
+                    wolf.userData.direction = -wolf.userData.direction;
+                }
+
+                wolf.rotation.y = wolf.userData.direction + Math.PI / 2;
+            });
+        }
+
+        function updateTimeOfDay() {
+            if (isPaused) return;
+
+            // Update time (12 hours in 1 real hour = 720 minutes in 60 minutes = 12x speed baseline)
+            // timeSpeed of 1 = 12x real time
+            timeOfDay += (timeSpeed * 12) / 3600; // Convert to hours per frame (60 fps)
+
+            if (timeOfDay >= 18) {
+                timeOfDay = 6; // Reset to sunrise
+            }
+
+            // Update sun position
+            const sunAngle = ((timeOfDay - 6) / 12) * Math.PI; // 6 AM to 6 PM
+            const sunDistance = 300;
+            const sunX = Math.cos(sunAngle + Math.PI) * sunDistance;
+            const sunY = Math.sin(sunAngle + Math.PI) * sunDistance;
+
+            sun.position.set(sunX, Math.abs(sunY), -100);
+            sunLight.position.copy(sun.position);
+
+            // Update lighting based on time
+            let sunIntensity;
+            let skyColor, groundColor;
+
+            if (timeOfDay < 7) {
+                // Dawn
+                const t = (timeOfDay - 6);
+                sunIntensity = t * 0.8;
+                skyColor = lerpColor(0x1a1a2e, 0xff6b35, t);
+                groundColor = lerpColor(0x1a1a2e, 0xffa07a, t);
+            } else if (timeOfDay < 8) {
+                // Morning
+                const t = (timeOfDay - 7);
+                sunIntensity = 0.8 + t * 0.4;
+                skyColor = lerpColor(0xff6b35, 0x87CEEB, t);
+                groundColor = lerpColor(0xffa07a, 0x8B7355, t);
+            } else if (timeOfDay < 16) {
+                // Day
+                sunIntensity = 1.2;
+                skyColor = 0x87CEEB;
+                groundColor = 0x8B7355;
+            } else if (timeOfDay < 17) {
+                // Evening
+                const t = (timeOfDay - 16);
+                sunIntensity = 1.2 - t * 0.4;
+                skyColor = lerpColor(0x87CEEB, 0xff6b35, t);
+                groundColor = lerpColor(0x8B7355, 0xffa07a, t);
+            } else {
+                // Dusk
+                const t = (timeOfDay - 17);
+                sunIntensity = 0.8 - t * 0.8;
+                skyColor = lerpColor(0xff6b35, 0x1a1a2e, t);
+                groundColor = lerpColor(0xffa07a, 0x1a1a2e, t);
+            }
+
+            sunLight.intensity = sunIntensity * parseFloat(document.getElementById('sun-intensity').value);
+
+            scene.background = new THREE.Color(skyColor);
+            scene.fog.color = new THREE.Color(skyColor);
+            hemisphereLight.color = new THREE.Color(skyColor);
+            hemisphereLight.groundColor = new THREE.Color(groundColor);
+
+            // Update UI
+            const hours = Math.floor(timeOfDay);
+            const minutes = Math.floor((timeOfDay - hours) * 60);
+            document.getElementById('time-display').textContent =
+                `Time: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        function lerpColor(color1, color2, t) {
+            const c1 = new THREE.Color(color1);
+            const c2 = new THREE.Color(color2);
+            return c1.lerp(c2, t).getHex();
+        }
+
+        function updateClouds() {
+            clouds.forEach(cloud => {
+                cloud.position.x += cloud.userData.speed;
+
+                if (cloud.position.x > 250) {
+                    cloud.position.x = -250;
+                }
+            });
+        }
+
+        function updatePOVCamera() {
+            if (!povMode || !povTarget) return;
+
+            const offset = new THREE.Vector3(0, 2, 0);
+
+            if (povTarget.userData.type === 'bird') {
+                offset.set(0, 0.5, 0);
+            } else if (povTarget.userData.type === 'wolf') {
+                offset.set(0, 1.5, 0);
+            }
+
+            camera.position.copy(povTarget.position).add(offset);
+
+            // Look in direction of movement
+            const lookAt = new THREE.Vector3(
+                povTarget.position.x + Math.cos(povTarget.userData.direction) * 10,
+                povTarget.position.y + offset.y,
+                povTarget.position.z + Math.sin(povTarget.userData.direction) * 10
+            );
+
+            camera.lookAt(lookAt);
+        }
+
+        function onDocumentClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            const allCreatures = [...animals, ...birds, ...wolves];
+            const intersects = raycaster.intersectObjects(allCreatures, true);
+
+            if (intersects.length > 0) {
+                let target = intersects[0].object;
+
+                // Find the parent group
+                while (target.parent && !target.userData.clickable) {
+                    target = target.parent;
+                }
+
+                if (target.userData.clickable) {
+                    enterPOVMode(target);
+                }
+            }
+        }
+
+        function enterPOVMode(creature) {
+            povMode = true;
+            povTarget = creature;
+
+            const creatureTypes = {
+                'deer': 'Deer',
+                'bird': 'Bird',
+                'wolf': 'Wolf'
+            };
+
+            const povInfo = document.getElementById('pov-info');
+            povInfo.textContent = `POV: ${creatureTypes[creature.userData.type]} - Press ESC to exit`;
+            povInfo.style.display = 'block';
+
+            document.getElementById('camera-mode').textContent = `Mode: ${creatureTypes[creature.userData.type]} POV`;
+        }
+
+        function exitPOVMode() {
+            povMode = false;
+            povTarget = null;
+
+            document.getElementById('pov-info').style.display = 'none';
+            document.getElementById('camera-mode').textContent = 'Mode: Free Camera';
+
+            // Reset camera
+            camera.position.set(0, 40, 100);
+            camera.lookAt(0, 20, 0);
+        }
+
+        function onKeyDown(event) {
+            if (event.key === 'Escape' && povMode) {
+                exitPOVMode();
+            }
+
+            if (event.key === 'w' || event.key === 'W') controls.forward = true;
+            if (event.key === 's' || event.key === 'S') controls.backward = true;
+            if (event.key === 'a' || event.key === 'A') controls.left = true;
+            if (event.key === 'd' || event.key === 'D') controls.right = true;
+        }
+
+        function onKeyUp(event) {
+            if (event.key === 'w' || event.key === 'W') controls.forward = false;
+            if (event.key === 's' || event.key === 'S') controls.backward = false;
+            if (event.key === 'a' || event.key === 'A') controls.left = false;
+            if (event.key === 'd' || event.key === 'D') controls.right = false;
+        }
+
+        function updateCameraControls() {
+            if (povMode) return;
+
+            const speed = 0.5;
+
+            if (controls.forward) camera.position.z -= speed;
+            if (controls.backward) camera.position.z += speed;
+            if (controls.left) camera.position.x -= speed;
+            if (controls.right) camera.position.x += speed;
+        }
+
+        function setupUIControls() {
+            // Time speed
+            const timeSpeedSlider = document.getElementById('time-speed');
+            const timeSpeedVal = document.getElementById('time-speed-val');
+            timeSpeedSlider.addEventListener('input', (e) => {
+                timeSpeed = parseFloat(e.target.value);
+                timeSpeedVal.textContent = timeSpeed.toFixed(1) + 'x';
+            });
+
+            // Cloud coverage
+            const cloudCoverageSlider = document.getElementById('cloud-coverage');
+            const cloudCoverageVal = document.getElementById('cloud-coverage-val');
+            cloudCoverageSlider.addEventListener('input', (e) => {
+                const coverage = parseInt(e.target.value);
+                cloudCoverageVal.textContent = coverage + '%';
+                clouds.forEach(cloud => {
+                    cloud.children.forEach(puff => {
+                        puff.material.opacity = coverage / 100;
+                    });
+                });
+            });
+
+            // Weather type
+            document.getElementById('weather-type').addEventListener('change', (e) => {
+                const weather = e.target.value;
+                document.getElementById('weather-display').textContent = `Weather: ${weather.charAt(0).toUpperCase() + weather.slice(1)}`;
+
+                // Update fog based on weather
+                if (weather === 'foggy') {
+                    scene.fog.density = 0.008;
+                } else if (weather === 'snowing') {
+                    scene.fog.density = 0.004;
                 } else {
-                    daysUntilRefillElement.textContent = `${daysUntilRefill} days until refill request`;
+                    scene.fog.density = parseFloat(document.getElementById('fog-density').value);
                 }
-                
-                // Update balance display
-                balanceValueElement.textContent = pillBalance;
-                
-                // Reset CSS classes
-                balanceValueElement.classList.remove('balance-negative', 'balance-positive', 'balance-zero');
-                
-                // Add appropriate class based on balance
-                if (pillBalance < 0) {
-                    balanceValueElement.classList.add('balance-negative');
-                } else if (pillBalance > 0) {
-                    balanceValueElement.classList.add('balance-positive');
+            });
+
+            // Tree density
+            const treeDensitySlider = document.getElementById('tree-density');
+            const treeDensityVal = document.getElementById('tree-density-val');
+            treeDensitySlider.addEventListener('input', (e) => {
+                const density = parseInt(e.target.value);
+                treeDensityVal.textContent = density;
+
+                // Add/remove trees
+                const currentCount = trees.length;
+                if (density > currentCount) {
+                    for (let i = 0; i < density - currentCount; i++) {
+                        const tree = createTree();
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = 30 + Math.random() * 150;
+                        tree.position.x = Math.cos(angle) * distance;
+                        tree.position.z = Math.sin(angle) * distance;
+                        tree.position.y = 0;
+                        trees.push(tree);
+                        scene.add(tree);
+                    }
                 } else {
-                    balanceValueElement.classList.add('balance-zero');
+                    for (let i = 0; i < currentCount - density; i++) {
+                        const tree = trees.pop();
+                        scene.remove(tree);
+                    }
                 }
-            }
-            
-            function updatePillBalance(change) {
-                // Get current data
-                const data = getDataFromStorage();
-                if (!data) return;
-                
-                // Update pill balance
-                data.pillBalance = (data.pillBalance || 0) + change;
-                pillBalance = data.pillBalance;
-                
-                // Save updated data
-                saveDataToStorageWithData(data);
-                
-                // Update UI
-                updateTrackingInfo();
-            }
-            
-            function updateTodayStatus(change) {
-                // Update the running total for today
-                todayExtraPills += change;
-                
-                const pillsPerDay = parseFloat(document.getElementById('updatePillsPerDay').value || 3);
-                
-                if (todayExtraPills > 0) {
-                    todayStatusElement.textContent = `Today: Taking extra (${todayExtraPills} more than prescribed)`;
-                    todayStatusElement.style.color = '#d32f2f'; // Red
-                } else if (todayExtraPills < 0) {
-                    todayStatusElement.textContent = `Today: Taking less (${Math.abs(todayExtraPills)} fewer than prescribed)`;
-                    todayStatusElement.style.color = '#2e7d32'; // Green
-                } else {
-                    todayStatusElement.textContent = `Today: Taking prescribed amount (${pillsPerDay} pills)`;
-                    todayStatusElement.style.color = '#000000'; // Black
-                }
-                
-                // Save today's status to localStorage for persistence
-                try {
-                    if (window.localStorage) {
-                        localStorage.setItem('medicationTrackerTodayExtraPills', todayExtraPills);
-                        
-                        // Set a timestamp for auto-reset
-                        if (!localStorage.getItem('medicationTrackerTodayTimestamp')) {
-                            localStorage.setItem('medicationTrackerTodayTimestamp', Date.now());
+            });
+
+            // Animal count
+            const animalCountSlider = document.getElementById('animal-count');
+            const animalCountVal = document.getElementById('animal-count-val');
+            animalCountSlider.addEventListener('input', (e) => {
+                const count = parseInt(e.target.value);
+                animalCountVal.textContent = count;
+
+                // Adjust total animal count
+                const totalAnimals = animals.length + birds.length + wolves.length;
+                if (count > totalAnimals) {
+                    const toAdd = count - totalAnimals;
+                    for (let i = 0; i < toAdd; i++) {
+                        const type = Math.random();
+                        let creature;
+                        if (type < 0.5) {
+                            creature = createWoodlandCreature();
+                            animals.push(creature);
+                        } else if (type < 0.8) {
+                            creature = createBird();
+                            birds.push(creature);
+                        } else {
+                            creature = createWolf();
+                            wolves.push(creature);
                         }
+                        scene.add(creature);
                     }
-                } catch (e) {
-                    console.log('LocalStorage not available:', e);
                 }
-                
-                // Reset status after 12 hours
-                checkStatusReset();
+            });
+
+            // Sun intensity
+            const sunIntensitySlider = document.getElementById('sun-intensity');
+            const sunIntensityVal = document.getElementById('sun-intensity-val');
+            sunIntensitySlider.addEventListener('input', (e) => {
+                sunIntensityVal.textContent = parseFloat(e.target.value).toFixed(1);
+            });
+
+            // Ambient light
+            const ambientLightSlider = document.getElementById('ambient-light');
+            const ambientLightVal = document.getElementById('ambient-light-val');
+            ambientLightSlider.addEventListener('input', (e) => {
+                const intensity = parseFloat(e.target.value);
+                ambientLightVal.textContent = intensity.toFixed(2);
+                ambientLight.intensity = intensity;
+            });
+
+            // Fog density
+            const fogDensitySlider = document.getElementById('fog-density');
+            const fogDensityVal = document.getElementById('fog-density-val');
+            fogDensitySlider.addEventListener('input', (e) => {
+                const density = parseFloat(e.target.value);
+                fogDensityVal.textContent = density.toFixed(4);
+                scene.fog.density = density;
+            });
+
+            // Stream flow
+            const streamFlowSlider = document.getElementById('stream-flow');
+            const streamFlowVal = document.getElementById('stream-flow-val');
+            streamFlowSlider.addEventListener('input', (e) => {
+                streamFlowVal.textContent = e.target.value + '%';
+            });
+
+            // Reset camera
+            document.getElementById('reset-camera').addEventListener('click', () => {
+                exitPOVMode();
+                camera.position.set(0, 40, 100);
+                camera.lookAt(0, 20, 0);
+            });
+
+            // Pause/Resume
+            document.getElementById('toggle-pause').addEventListener('click', (e) => {
+                isPaused = !isPaused;
+                e.target.textContent = isPaused ? 'Resume Simulation' : 'Pause Simulation';
+                e.target.classList.toggle('danger');
+            });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!isPaused) {
+                updateTimeOfDay();
+                updateAnimals();
+                updateClouds();
             }
-            
-            function saveDataToStorage() {
-                // Gather data
-                const data = {
-                    startDate: startDateInput.value,
-                    totalPills: parseInt(totalPillsInput.value),
-                    pillsPerDay: parseFloat(pillsPerDayInput.value),
-                    cycleDays: parseInt(cycleDaysInput.value),
-                    pillBalance: pillBalance,
-                    excuseDeficit: excusePillsToggle.checked
-                };
-                
-                // Save to storage
-                saveDataToStorageWithData(data);
+
+            if (povMode) {
+                updatePOVCamera();
+            } else {
+                updateCameraControls();
             }
-            
-            function saveDataToStorageWithData(data) {
-                // Try to use localStorage if available
-                try {
-                    if (window.localStorage) {
-                        localStorage.setItem('medicationTrackerData', JSON.stringify(data));
-                    }
-                } catch (e) {
-                    console.log('LocalStorage not available:', e);
-                }
-                
-                // Always update URL parameters as fallback
-                updateUrlParams(data);
-            }
-            
-            function getDataFromStorage() {
-                let data = null;
-                
-                // Try localStorage first
-                try {
-                    if (window.localStorage) {
-                        const storedData = localStorage.getItem('medicationTrackerData');
-                        if (storedData) {
-                            data = JSON.parse(storedData);
-                        }
-                    }
-                } catch (e) {
-                    console.log('LocalStorage not available:', e);
-                }
-                
-                // If no localStorage data, try URL parameters
-                if (!data) {
-                    data = getDataFromUrl();
-                }
-                
-                return data;
-            }
-            
-            function getDataFromUrl() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const startDate = urlParams.get('startDate');
-                const totalPills = urlParams.get('totalPills');
-                const pillsPerDay = urlParams.get('pillsPerDay');
-                const cycleDays = urlParams.get('cycleDays');
-                const pillBalance = urlParams.get('pillBalance');
-                const excuseDeficit = urlParams.get('excuseDeficit');
-                
-                if (!startDate || !totalPills || !pillsPerDay || !cycleDays) {
-                    return null;
-                }
-                
-                return {
-                    startDate,
-                    totalPills: parseInt(totalPills),
-                    pillsPerDay: parseFloat(pillsPerDay),
-                    cycleDays: parseInt(cycleDays),
-                    pillBalance: pillBalance ? parseFloat(pillBalance) : 0,
-                    excuseDeficit: excuseDeficit === 'true'
-                };
-            }
-            
-            function updateUrlParams(data) {
-                // Create URL with parameters
-                const url = new URL(window.location.href.split('?')[0]);
-                
-                // Add all data as parameters
-                for (const [key, value] of Object.entries(data)) {
-                    url.searchParams.set(key, value);
-                }
-                
-                // Update URL without reloading page
-                try {
-                    window.history.pushState({}, '', url);
-                } catch (e) {
-                    console.log('History API not available:', e);
-                }
-            }
-            
-            function initializeFromStorage() {
-                const data = getDataFromStorage();
-                
-                if (data) {
-                    // Set form values
-                    startDateInput.value = data.startDate;
-                    totalPillsInput.value = data.totalPills;
-                    pillsPerDayInput.value = data.pillsPerDay;
-                    cycleDaysInput.value = data.cycleDays;
-                    updateTotalPillsInput.value = data.totalPills;
-                    updatePillsPerDayInput.value = data.pillsPerDay;
-                    updateCycleDaysInput.value = data.cycleDays;
-                    pillBalance = data.pillBalance || 0;
-                    excusePillsToggle.checked = data.excuseDeficit;
-                    
-                    // Check for stored today's status
-                    try {
-                        if (window.localStorage) {
-                            const storedExtraPills = localStorage.getItem('medicationTrackerTodayExtraPills');
-                            if (storedExtraPills !== null) {
-                                todayExtraPills = parseFloat(storedExtraPills);
-                                
-                                // Update today's status display
-                                if (todayExtraPills > 0) {
-                                    todayStatusElement.textContent = `Today: Taking extra (${todayExtraPills} more than prescribed)`;
-                                    todayStatusElement.style.color = '#d32f2f';
-                                } else if (todayExtraPills < 0) {
-                                    todayStatusElement.textContent = `Today: Taking less (${Math.abs(todayExtraPills)} fewer than prescribed)`;
-                                    todayStatusElement.style.color = '#2e7d32';
-                                }
-                            }
-                            
-                            // Check if we need to reset today's status
-                            checkStatusReset();
-                        }
-                    } catch (e) {
-                        console.log('LocalStorage not available:', e);
-                    }
-                    
-                    // Update UI and show tracking
-                    updateTrackingInfo();
-                    setupForm.classList.add('hidden');
-                    trackingInfo.classList.remove('hidden');
-                }
-            }
-            
-            function checkStatusReset() {
-                try {
-                    if (window.localStorage) {
-                        const timestamp = localStorage.getItem('medicationTrackerTodayTimestamp');
-                        
-                        if (timestamp) {
-                            const timeElapsed = Date.now() - parseInt(timestamp);
-                            const hoursElapsed = timeElapsed / (1000 * 60 * 60);
-                            
-                            // Reset if more than 12 hours have passed
-                            if (hoursElapsed >= 12) {
-                                // Reset today's counters
-                                todayExtraPills = 0;
-                                localStorage.removeItem('medicationTrackerTodayExtraPills');
-                                localStorage.removeItem('medicationTrackerTodayTimestamp');
-                                
-                                // Reset status display
-                                const pillsPerDay = parseFloat(document.getElementById('updatePillsPerDay').value || 3);
-                                todayStatusElement.textContent = `Today: Taking prescribed amount (${pillsPerDay} pills)`;
-                                todayStatusElement.style.color = '#000000';
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.log('LocalStorage not available:', e);
-                }
-            }
-            
-            function resetTracker() {
-                if (confirm('Are you sure you want to reset the tracker? This will clear all saved data.')) {
-                    // Clear localStorage
-                    try {
-                        if (window.localStorage) {
-                            localStorage.removeItem('medicationTrackerData');
-                            localStorage.removeItem('medicationTrackerTodayExtraPills');
-                            localStorage.removeItem('medicationTrackerTodayTimestamp');
-                        }
-                    } catch (e) {
-                        console.log('LocalStorage not available:', e);
-                    }
-                    
-                    // Clear URL parameters
-                    try {
-                        const url = new URL(window.location.href.split('?')[0]);
-                        window.history.pushState({}, '', url);
-                    } catch (e) {
-                        console.log('History API not available:', e);
-                    }
-                    
-                    // Reset form
-                    startDateInput.value = formattedDate;
-                    totalPillsInput.value = "82";
-                    pillsPerDayInput.value = "3";
-                    cycleDaysInput.value = "28";
-                    pillBalance = 0;
-                    todayExtraPills = 0;
-                    
-                    // Show setup form
-                    setupForm.classList.remove('hidden');
-                    trackingInfo.classList.add('hidden');
-                }
-            }
-            
-            function updateStartDate() {
-                if (confirm('Update the start date to today? This will reset your tracking period but keep your settings.')) {
-                    // Get current data
-                    const data = getDataFromStorage();
-                    if (!data) return;
-                    
-                    // Set new start date to today
-                    const today = new Date();
-                    const formattedDate = today.toISOString().split('T')[0];
-                    
-                    // Calculate natural deficit for new cycle
-                    const naturalDeficit = data.totalPills - (data.pillsPerDay * data.cycleDays);
-                    
-                    // Update data
-                    data.startDate = formattedDate;
-                    data.pillBalance = naturalDeficit; // Reset pill balance to the natural deficit
-                    
-                    // Save updated data
-                    saveDataToStorageWithData(data);
-                    
-                    // Update UI
-                    startDateInput.value = formattedDate;
-                    updateTrackingInfo();
-                }
-            }
-            
-            function exportData() {
-                const data = getDataFromStorage();
-                if (!data) {
-                    alert('No data to export.');
-                    return;
-                }
-                
-                // Convert to data string
-                const dataString = btoa(JSON.stringify(data));
-                dataStringArea.value = dataString;
-                
-                // Select the text for easy copying
-                dataStringArea.select();
-                
-                alert('Data exported. Copy this string to save your data or transfer to another device.');
-            }
-            
-            function importData() {
-                const dataString = dataStringArea.value.trim();
-                if (!dataString) {
-                    alert('Please paste a data string to import.');
-                    return;
-                }
-                
-                try {
-                    // Decode and parse the data
-                    const data = JSON.parse(atob(dataString));
-                    
-                    // Validate required fields
-                    if (!data.startDate || !data.totalPills || !data.pillsPerDay || !data.cycleDays) {
-                        throw new Error('Invalid data format.');
-                    }
-                    
-                    // Save to storage
-                    saveDataToStorageWithData(data);
-                    
-                    // Update form values
-                    startDateInput.value = data.startDate;
-                    totalPillsInput.value = data.totalPills;
-                    pillsPerDayInput.value = data.pillsPerDay;
-                    cycleDaysInput.value = data.cycleDays;
-                    updateTotalPillsInput.value = data.totalPills;
-                    updatePillsPerDayInput.value = data.pillsPerDay;
-                    updateCycleDaysInput.value = data.cycleDays;
-                    pillBalance = data.pillBalance || 0;
-                    excusePillsToggle.checked = data.excuseDeficit;
-                    
-                    // Update UI
-                    updateTrackingInfo();
-                    setupForm.classList.add('hidden');
-                    trackingInfo.classList.remove('hidden');
-                    
-                    alert('Data imported successfully!');
-                } catch (e) {
-                    alert('Error importing data: ' + e.message);
-                }
-            }
-            
-            // Set up auto-refresh for accurate tracking
-            setInterval(updateTrackingInfo, 60000); // Update every minute
-        });
-        
-        // Tab handling
-        function openTab(evt, tabName) {
-            let tabcontent = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            
-            let tablinks = document.getElementsByClassName("tab-button");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
+
+            renderer.render(scene, camera);
         }
     </script>
 </body>
